@@ -112,7 +112,7 @@ tagged_burst_to_pdu_impl::tagged_burst_to_pdu_impl(size_t decimation,
     // ensuring that we account for filter tails.  In downsampling, we skip over D input
     // points after every calculation.  The filter function always starts at the first
     // input point, so we need to throw away some filter tail points to ensure that.
-    GR_LOG_DEBUG(d_logger, boost::format("filter len = %1%") % d_taps.size());
+    GR_LOG_DEBUG(d_logger, str(boost::format("filter len = %1%") % d_taps.size()));
 
     // since this is a sync block, setting this field also ensures we have the input
     // buffer as a multiple of this size. In order to use this block after the
@@ -149,8 +149,8 @@ tagged_burst_to_pdu_impl::~tagged_burst_to_pdu_impl()
 
 bool tagged_burst_to_pdu_impl::stop()
 {
-    GR_LOG_INFO(d_logger, boost::format("Stopped with %d bursts remaining in queue") % d_bursts.size());
-    GR_LOG_INFO(d_logger, boost::format("Emitted %lu bursts") % ++d_max_id);
+    GR_LOG_INFO(d_logger, str(boost::format("Stopped with %d bursts remaining in queue") % d_bursts.size()));
+    GR_LOG_INFO(d_logger, str(boost::format("Emitted %lu bursts") % ++d_max_id));
     buffer* end_buffer = new buffer(0);
     end_buffer->end_flag = true;
     d_work_queue.bounded_push(end_buffer);
@@ -243,8 +243,8 @@ void tagged_burst_to_pdu_impl::create_new_bursts(const buffer& work_buffer)
             // malloc any more memory
             if (d_bursts.count(id)) {
                 GR_LOG_ERROR(d_logger,
-                             boost::format("tagged_burst_to_pdu saw a repeated burst id "
-                                           "(%1%), discarding...") % id);
+                             str(boost::format("tagged_burst_to_pdu saw a repeated burst id "
+                                           "(%1%), discarding...") % id));
                 break; // break to prevent memory leak
             }
 
@@ -271,7 +271,7 @@ void tagged_burst_to_pdu_impl::create_new_bursts(const buffer& work_buffer)
             start_offset = (tag.offset / d_decimation) * d_decimation;
             if (id == 1) {
                 GR_LOG_INFO(d_logger,
-                            boost::format("start = %1% %2%") % start_offset % tag.offset);
+                            str(boost::format("start = %1% %2%") % start_offset % tag.offset));
             }
             // It is possible (but unlikely) that the truncation will put us behind the
             // start of the buffer. In that case increment by d_decimation
@@ -337,9 +337,9 @@ void tagged_burst_to_pdu_impl::create_new_bursts(const buffer& work_buffer)
                 // append_to_burst(d_new_bursts[id], &in[relative_offset], to_copy);
                 if (d_debug) {
                     GR_LOG_INFO(d_logger,
-                                boost::format("New burst: offset=%lu, id=%lu, "
+                                str(boost::format("New burst: offset=%lu, id=%lu, "
                                               "relative_frequency=%f") %
-                                    tag.offset % id % relative_frequency);
+                                    tag.offset % id % relative_frequency));
                 }
             } else {
                 GR_LOG_ERROR(d_logger, "malloc failed!");
@@ -357,7 +357,7 @@ void tagged_burst_to_pdu_impl::publish_and_remove_old_bursts(const buffer& work_
             burst_data& burst = d_bursts[id];
             if (d_debug) {
                 GR_LOG_INFO(d_logger,
-                            boost::format("gone burst: %1% %2%") % id % burst.len);
+                            str(boost::format("gone burst: %1% %2%") % id % burst.len));
             }
             // Subtract off any samples from the end
             size_t offset = std::ceil((d_block_size - tag.offset + work_buffer.start) /
@@ -371,8 +371,8 @@ void tagged_burst_to_pdu_impl::publish_and_remove_old_bursts(const buffer& work_
             if (burst.len >= d_min_burst_size) {
                 if (id == 1) {
                     GR_LOG_INFO(d_logger,
-                                boost::format("id %1%: len = %2% %3%") % id % burst.len %
-                                    tag.offset);
+                                str(boost::format("id %1%: len = %2% %3%") % id % burst.len %
+                                    tag.offset));
                 }
                 publish_burst(burst);
             }
@@ -400,7 +400,7 @@ void tagged_burst_to_pdu_impl::publish_and_remove_old_bursts(const buffer& work_
             burst.dict = pmt::dict_add(burst.dict, PMTCONSTSTR__cut_short(), pmt::PMT_T);
             if (d_debug) {
                 GR_LOG_INFO(d_logger,
-                            boost::format("gone (long) burst: %1% %2%") % id % burst.len);
+                            str(boost::format("gone (long) burst: %1% %2%") % id % burst.len));
             }
             if (burst.len >= d_min_burst_size) {
                 publish_burst(burst);
@@ -459,8 +459,8 @@ void tagged_burst_to_pdu_impl::process_data()
                 (work_buffer->data.size() - d_taps.size() + 1) / d_decimation;
             if (d_bursts.size() > max_cbursts) {
                 GR_LOG_INFO(d_logger,
-                            boost::format("New max bursts from %1% to %2%") %
-                                max_cbursts % d_bursts.size());
+                            str(boost::format("New max bursts from %1% to %2%") %
+                                max_cbursts % d_bursts.size()));
                 max_cbursts = d_bursts.size();
             }
             if (d_bursts.size() > 0) {

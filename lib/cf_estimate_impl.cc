@@ -159,8 +159,8 @@ void cf_estimate_impl::pdu_handler(pmt::pmt_t pdu)
 
     if (burst_size < MIN_BURST_SIZE) {
         GR_LOG_INFO(d_logger,
-                    boost::format("Burst of length %d too small (min = %d), dropping.") %
-                        burst_size % MIN_BURST_SIZE);
+                    str(boost::format("Burst of length %d too small (min = %d), dropping.") %
+                        burst_size % MIN_BURST_SIZE));
     }
 
     //////////////////////////////////
